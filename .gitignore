@@ -4,6 +4,7 @@ build/
 dist/
 out/
 *.log
+!world/die_zauberschmiede/db/*.log
 *.mcworld
 *.mcpack
 *.mcworld.tmp
