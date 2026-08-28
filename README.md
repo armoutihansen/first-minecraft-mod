@@ -9,3 +9,5 @@ The first playable version centers on a starter chest near spawn. It contains th
 - iron sword + 1 diamond → netherite sword
 
 Product requirements and implementation work are tracked in [GitHub Issues](https://github.com/armoutihansen/first-minecraft-mod/issues).
+
+Before setting up tools, read the [approved Mac development environment plan](docs/development-environment.md). The first playable version is JSON-first and uses no TypeScript, scripting, or experimental creator features.
