@@ -1,6 +1,6 @@
 # Mac development environment
 
-This document is the approved environment plan for the first playable version of **Die Zauberschmiede**. It describes what the parent will set up in the next implementation issue; it does not install tools or create Minecraft content.
+This document records the approved environment for the first playable version of **Die Zauberschmiede**. Issue #2 implemented the Mac-side tooling; the base-world and device gates remain parent-run.
 
 ## Decision in one minute
 
@@ -24,7 +24,7 @@ Rechecked on 2026-08-28:
 | --- | --- | --- |
 | Node.js | 26.7.0 at `/opt/homebrew/bin/node` | Present; satisfies Creator Tools' documented Node.js 22-or-later requirement. Do not replace it for the first playable version unless the pinned tool fails on it. |
 | npm | 11.19.0 at `/opt/homebrew/bin/npm` | Present; use it for the project-local tool and lockfile. |
-| Minecraft Creator Tools (`mct`) | Not installed locally or globally | Required for the later static-validation setup. Add it as a pinned development dependency in this repository, not as a global install. |
+| Minecraft Creator Tools (`mct`) | Project-local version 0.17.7, locked by npm; no global command required | Installed with `npm ci` and run through the repository commands. |
 | Visual Studio Code | Stable 1.134.0 and Insiders are installed; `code` opens stable VS Code | Use stable VS Code. Its built-in JSON support is enough to begin. |
 | Bedrock-specific VS Code extension | Not detected | Optional. Blockception's Minecraft Bedrock Development extension can improve completion and diagnostics, but it is not a prerequisite. |
 | ZIP packaging | `/usr/bin/zip` 3.0 | Present and sufficient for `.mcworld` packaging. |
@@ -91,11 +91,21 @@ The later setup should:
 6. inspect the assembled world before packaging, including its required Bedrock world files, embedded packs, and pack-association JSON;
 7. inspect the `.mcworld` archive to ensure it has no extra top-level directory.
 
-The exact Creator Tools command must be confirmed against the pinned version's `--help`. The currently documented form is equivalent to:
+Run the pinned Creator Tools integration through the repository wrapper:
 
 ```sh
-npm exec -- mct validate addon -i <project-directory> -v
+npm run validate
 ```
+
+The wrapper uses Creator Tools 0.17.7's machine-readable mode and requires zero errors and zero warnings. It excludes the optional pack-icon check because the first playable version does not require a pack icon. Do not substitute `-v`: in this pinned CLI it prints the version instead of enabling verbose validation.
+
+For the detailed HTML report, use:
+
+```sh
+npm run report
+```
+
+This command preserves `out/die_zauberschmiede.report.html` and opens it on macOS. The generated `out/` directory is ignored by Git. Running the canonical `npm run validate` afterward removes it again so routine validation leaves the worktree clean.
 
 Static success means the JSON and package shape are plausible. It does not mean Minecraft accepted the world or the custom recipes behave correctly.
 
@@ -112,18 +122,19 @@ Use a freshly generated `.mcworld` each time:
 
 Device validation is intentionally separate from Mac-side validation. Minecraft Bedrock is available on Windows PCs and mobile devices, while the official Bedrock Editor requires Windows; neither is part of this minimal Mac setup.
 
-## Exact setup work deferred to issue #2
+## Issue #2 setup status
 
-Before gameplay implementation, issue #2 must complete this setup slice:
+The Mac-side setup now provides:
 
-- create the minimal directory structure above, omitting the resource pack unless it is actually needed;
-- create `package.json` with no TypeScript or script-runtime dependencies;
-- add and lock a compatible project-local `@minecraft/creator-tools` version;
-- add version-control ignores for dependencies, build staging, exports, logs, temporary archives, and macOS metadata;
-- add small, documented validation and packaging commands;
-- prove those commands fail clearly for malformed JSON and an archive with an extra directory level;
-- document how the parent supplies/updates the authoritative base world from a supported Bedrock device;
-- produce a smoke-test package with no gameplay claim, then confirm a clean import on both supported family devices before building the first custom recipe.
+- the minimal behavior-pack directory without an unnecessary resource pack;
+- `package.json` and a lockfile with no TypeScript or script-runtime dependency;
+- pinned project-local Minecraft Creator Tools;
+- version-control ignores for dependencies, build staging, exports, logs, temporary archives, and macOS metadata;
+- tested validation, packaging, and archive-inspection commands;
+- explicit failures for malformed JSON, missing base-world files, and an archive with an extra directory level;
+- instructions for supplying the authoritative base world from a supported Bedrock device.
+
+The remaining gate is to supply the exported base world, generate a smoke-test package, and confirm a clean import on both supported family devices. Gameplay acceptance follows the checklist in `docs/acceptance/first-custom-recipe.md`.
 
 If local Creator Tools does not run with the current Node.js version, stop and report the exact error. The parent-facing next step is then to install an actively supported Node.js 22 LTS runtime (preferably through the existing Homebrew setup or a user-chosen version manager) and rerun `npm ci`; do not silently replace the system runtime.
 
