@@ -24,7 +24,9 @@ async function main() {
   if (command === "validate") {
     const result = await validateProject(projectRoot);
     console.log(`Valid JSON: ${result.jsonFileCount} authored file(s)`);
-    console.log("Pack: non-experimental behavior-pack shell (no recipes yet)");
+    console.log(
+      "Recipe: wooden pickaxe + 3 cobblestone -> 1 stone pickaxe",
+    );
     console.log(
       `Creator Tools validation passed (${result.creatorToolsErrors} errors, ${result.creatorToolsWarnings} warnings)`,
     );

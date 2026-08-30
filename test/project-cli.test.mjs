@@ -215,7 +215,7 @@ test("inspection rejects a behavior-pack association with the wrong UUID", async
   }
 });
 
-test("project validation accepts the non-experimental behavior-pack shell", async () => {
+test("project validation accepts the first Zauberschmiede spell", async () => {
   await rm(path.join(repositoryRoot, "out"), { recursive: true, force: true });
   const result = spawnSync(
     process.execPath,
@@ -225,6 +225,10 @@ test("project validation accepts the non-experimental behavior-pack shell", asyn
 
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /Creator Tools validation passed \(0 errors/i);
+  assert.match(
+    result.stdout,
+    /wooden pickaxe \+ 3 cobblestone -> 1 stone pickaxe/,
+  );
   await assert.rejects(
     access(path.join(repositoryRoot, "out", "die_zauberschmiede.mcr.json")),
     { code: "ENOENT" },

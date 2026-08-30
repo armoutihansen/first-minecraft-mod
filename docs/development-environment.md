@@ -97,7 +97,7 @@ Run the pinned Creator Tools integration through the repository wrapper:
 npm run validate
 ```
 
-The wrapper uses Creator Tools 0.17.7's machine-readable mode and requires zero errors and zero warnings. It excludes the optional pack-icon check because the first playable version does not require a pack icon. Do not substitute `-v`: in this pinned CLI it prints the version instead of enabling verbose validation.
+The wrapper uses Creator Tools 0.17.7's machine-readable mode and requires zero errors and zero warnings. It excludes the optional pack-icon check because the first playable version does not require a pack icon. It also excludes Creator Tools' `UNLINK` rule: isolated mode does not load the vanilla item catalog and otherwise reports valid `minecraft:` recipe ingredients as missing links. The repository wrapper compensates by checking the first spell's exact ingredient identifiers, counts, output, crafting tag, and unlock rule before Creator Tools runs. The HTML report uses the same exclusions. Do not substitute `-v`: in this pinned CLI it prints the version instead of enabling verbose validation.
 
 For the detailed HTML report, use:
 
@@ -134,7 +134,7 @@ The Mac-side setup now provides:
 - explicit failures for malformed JSON, missing base-world files, and an archive with an extra directory level;
 - instructions for supplying the authoritative base world from a supported Bedrock device.
 
-The remaining gate is to supply the exported base world, generate a smoke-test package, and confirm a clean import on both supported family devices. Gameplay acceptance follows the checklist in `docs/acceptance/first-custom-recipe.md`.
+The authoritative base world and smoke-test package now exist. Opening the `.mcworld` launches Minecraft on the iPhone, but the clean-import details are not yet verified. The parent explicitly accepted provisional device assumptions so first-recipe development could continue; both clean-import records must still be completed before issue #2 can close. The first custom recipe is now authored; starter-chest, Handbuch, and player acceptance remain on the checklist in `docs/acceptance/first-custom-recipe.md`.
 
 If local Creator Tools does not run with the current Node.js version, stop and report the exact error. The parent-facing next step is then to install an actively supported Node.js 22 LTS runtime (preferably through the existing Homebrew setup or a user-chosen version manager) and rerun `npm ci`; do not silently replace the system runtime.
 
@@ -148,7 +148,7 @@ Environment setup is complete only when:
 - generated dependencies, staging, and exports do not appear in `git status`;
 - the archive inspection proves the Bedrock world files are at its root and the required packs are attached;
 - a parent can follow the mobile-import instructions without knowing npm internals;
-- a clean package imports into Minecraft Bedrock on both the iPhone and Amazon Kids tablet before custom-recipe work begins;
+- a clean package imports into Minecraft Bedrock on both the iPhone and Amazon Kids tablet before issue #2 closes; any provisional assumption used during development remains visibly unverified;
 - no TypeScript, Script API dependency, or experimental feature has been introduced.
 
 ## Primary references

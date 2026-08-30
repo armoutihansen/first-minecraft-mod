@@ -26,5 +26,5 @@ Record the Minecraft version and pass/fail result for each device before treatin
 
 | Device | Minecraft version | Clean import | Player checks | Result |
 | --- | --- | --- | --- | --- |
-| iPhone | Pending | Pending | Pending | Pending |
-| Amazon Kids tablet | Pending | Pending | Pending | Pending |
+| iPhone | Not recorded | File launches Minecraft; full check pending | Pending | Provisional |
+| Amazon Kids tablet | Not recorded | Assumed for development; not verified | Pending | Provisional |

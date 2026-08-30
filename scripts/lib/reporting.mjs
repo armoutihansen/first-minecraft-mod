@@ -40,7 +40,7 @@ export async function createValidationReport(
       "--force",
       "validate",
       "main",
-      "CPACKICON",
+      "CPACKICON,UNLINK",
     ],
     {
       encoding: "utf8",

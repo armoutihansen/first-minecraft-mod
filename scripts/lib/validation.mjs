@@ -17,10 +17,17 @@ export async function validateProject(projectRoot) {
     "die_zauberschmiede",
   );
   const manifestFile = path.join(behaviorPack, "manifest.json");
+  const firstRecipeFile = path.join(
+    behaviorPack,
+    "recipes",
+    "wooden_pickaxe_to_stone_pickaxe.json",
+  );
   const localCreatorTools = path.join(projectRoot, "node_modules", ".bin", "mct");
 
   const jsonFiles = await checkAuthoredJson(projectRoot);
   const manifest = JSON.parse(await readFile(manifestFile, "utf8"));
+  const firstRecipe = JSON.parse(await readFile(firstRecipeFile, "utf8"));
+  const spell = firstRecipe["minecraft:recipe_shapeless"];
   const uuidPattern =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -46,8 +53,39 @@ export async function validateProject(projectRoot) {
     "Experimental capabilities are not allowed",
   );
   requireCondition(
-    jsonFiles.length === 1,
-    "The smoke-test pack must not contain custom-recipe JSON yet",
+    firstRecipe.format_version === "1.21.40",
+    "The first custom recipe must use format_version 1.21.40",
+  );
+  requireCondition(
+    spell?.description?.identifier ===
+      "die_zauberschmiede:wooden_pickaxe_to_stone_pickaxe",
+    "The first custom recipe has the wrong identifier",
+  );
+  requireCondition(
+    sameJson(spell?.tags, ["crafting_table"]),
+    "The first custom recipe must use ordinary crafting",
+  );
+  requireCondition(
+    sameJson(spell?.ingredients, [
+      { item: "minecraft:wooden_pickaxe" },
+      { item: "minecraft:cobblestone", count: 3 },
+    ]),
+    "The first custom recipe must consume one wooden pickaxe and three cobblestone",
+  );
+  requireCondition(
+    sameJson(spell?.unlock, { context: "AlwaysUnlocked" }),
+    "The first custom recipe must always be discoverable",
+  );
+  requireCondition(
+    sameJson(spell?.result, {
+      item: "minecraft:stone_pickaxe",
+      count: 1,
+    }),
+    "The first custom recipe must produce exactly one stone pickaxe",
+  );
+  requireCondition(
+    jsonFiles.length === 2,
+    "The first spell slice must contain exactly one custom recipe",
   );
 
   await requireFile(localCreatorTools, projectRoot);
@@ -63,8 +101,9 @@ export async function validateProject(projectRoot) {
       "--json",
       "validate",
       "main",
-      // A pack icon is optional in Bedrock and belongs to the child's later visual work.
-      "CPACKICON",
+      // A pack icon is optional. Isolated mode cannot resolve vanilla item links,
+      // which are checked explicitly above for this recipe instead.
+      "CPACKICON,UNLINK",
     ],
     {
       encoding: "utf8",
