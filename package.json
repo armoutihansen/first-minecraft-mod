@@ -12,6 +12,7 @@
     "check:json": "node scripts/bedrock-project.mjs check-json",
     "validate": "node scripts/bedrock-project.mjs validate",
     "report": "node scripts/bedrock-project.mjs report",
+    "prepare:starter-chest": "node scripts/bedrock-project.mjs enable-starter-chest",
     "package:world": "node scripts/bedrock-project.mjs package",
     "inspect:world": "node scripts/bedrock-project.mjs inspect"
   },

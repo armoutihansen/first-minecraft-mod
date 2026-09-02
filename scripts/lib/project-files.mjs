@@ -54,3 +54,24 @@ export function requireCondition(condition, message) {
 export function sameJson(actual, expected) {
   return JSON.stringify(actual) === JSON.stringify(expected);
 }
+
+export function isVersionTuple(version) {
+  return (
+    Array.isArray(version) &&
+    version.length === 3 &&
+    version.every(Number.isInteger) &&
+    version.every((part) => part >= 0)
+  );
+}
+
+export function isVersionAtLeast(version, minimum) {
+  if (!isVersionTuple(version) || !isVersionTuple(minimum)) {
+    return false;
+  }
+  for (let index = 0; index < version.length; index += 1) {
+    if (version[index] !== minimum[index]) {
+      return version[index] > minimum[index];
+    }
+  }
+  return true;
+}

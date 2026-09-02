@@ -2,7 +2,12 @@ import { spawnSync } from "node:child_process";
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import { requireCondition, requireFile, sameJson } from "./project-files.mjs";
+import {
+  isVersionTuple,
+  requireCondition,
+  requireFile,
+  sameJson,
+} from "./project-files.mjs";
 
 const behaviorPackName = "die_zauberschmiede";
 const embeddedManifestPath =
@@ -115,7 +120,7 @@ export async function packageWorld(projectRoot) {
   const packId = manifest.header?.uuid;
   const packVersion = manifest.header?.version;
   requireCondition(
-    typeof packId === "string" && Array.isArray(packVersion),
+    typeof packId === "string" && isVersionTuple(packVersion),
     "Behavior-pack manifest needs header.uuid and header.version",
   );
 
@@ -126,7 +131,10 @@ export async function packageWorld(projectRoot) {
     behaviorPackName,
   );
   const outputDirectory = path.join(projectRoot, "dist");
-  const outputFile = path.join(outputDirectory, "die-zauberschmiede.mcworld");
+  const outputFile = path.join(
+    outputDirectory,
+    `die-zauberschmiede-v${packVersion.join(".")}.mcworld`,
+  );
 
   await rm(assembledWorld, { recursive: true, force: true });
   await mkdir(path.dirname(assembledWorld), { recursive: true });

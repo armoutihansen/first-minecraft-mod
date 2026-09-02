@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import {
   access,
+  cp,
+  copyFile,
   mkdtemp,
   mkdir,
   readFile,
@@ -11,6 +13,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
+
+import { readWorldFlags } from "../scripts/lib/level-dat.mjs";
 
 const repositoryRoot = path.resolve(import.meta.dirname, "..");
 const projectCommand = path.join(repositoryRoot, "scripts", "bedrock-project.mjs");
@@ -83,7 +87,7 @@ test("packaging creates a world-root archive without changing sources", async ()
     const packagePath = path.join(
       fixtureRoot,
       "dist",
-      "die-zauberschmiede.mcworld",
+      "die-zauberschmiede-v1.0.0.mcworld",
     );
     const listing = spawnSync("unzip", ["-Z1", packagePath], {
       encoding: "utf8",
@@ -115,6 +119,62 @@ test("packaging creates a world-root archive without changing sources", async ()
       readFile(path.join(worldSource, "world_behavior_packs.json")),
       { code: "ENOENT" },
     );
+  } finally {
+    await rm(fixtureRoot, { recursive: true, force: true });
+  }
+});
+
+test("starter-chest preparation safely enables a fresh bonus chest", async () => {
+  const fixtureRoot = await mkdtemp(path.join(tmpdir(), "zauberschmiede-chest-"));
+
+  try {
+    const fixtureWorld = path.join(
+      fixtureRoot,
+      "world",
+      "die_zauberschmiede",
+    );
+    const fixtureLevel = path.join(fixtureWorld, "level.dat");
+    await mkdir(fixtureWorld, { recursive: true });
+    await copyFile(
+      path.join(
+        repositoryRoot,
+        "world",
+        "die_zauberschmiede",
+        "level.dat_old",
+      ),
+      fixtureLevel,
+    );
+    const before = await readFile(fixtureLevel);
+    assert.equal(readWorldFlags(before).bonusChestEnabled, 0);
+
+    const firstRun = spawnSync(
+      process.execPath,
+      [projectCommand, "enable-starter-chest", fixtureRoot],
+      { encoding: "utf8" },
+    );
+    assert.equal(firstRun.status, 0, firstRun.stderr);
+    const after = await readFile(fixtureLevel);
+    assert.deepEqual(readWorldFlags(after), {
+      bonusChestEnabled: 1,
+      bonusChestSpawned: 0,
+      cheatsEnabled: 0,
+      commandsEnabled: 0,
+      experiments_ever_used: 0,
+      saved_with_toggled_experiments: 0,
+    });
+    assert.equal(
+      [...before].filter((value, index) => value !== after[index]).length,
+      1,
+      "only bonusChestEnabled should change",
+    );
+
+    const secondRun = spawnSync(
+      process.execPath,
+      [projectCommand, "enable-starter-chest", fixtureRoot],
+      { encoding: "utf8" },
+    );
+    assert.equal(secondRun.status, 0, secondRun.stderr);
+    assert.deepEqual(await readFile(fixtureLevel), after);
   } finally {
     await rm(fixtureRoot, { recursive: true, force: true });
   }
@@ -224,15 +284,84 @@ test("project validation accepts the first Zauberschmiede spell", async () => {
   );
 
   assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Behavior pack version: \d+\.\d+\.\d+/);
   assert.match(result.stdout, /Creator Tools validation passed \(0 errors/i);
   assert.match(
     result.stdout,
     /wooden pickaxe \+ 3 cobblestone -> 1 stone pickaxe/,
   );
+  assert.match(result.stdout, /Starter chest: enabled and awaiting first spawn/);
+  assert.match(
+    result.stdout,
+    /Handbuch: use three separate crafting squares for the cobblestone/,
+  );
   await assert.rejects(
     access(path.join(repositoryRoot, "out", "die_zauberschmiede.mcr.json")),
     { code: "ENOENT" },
   );
+});
+
+test("project validation rejects the recipe-only pack version", async () => {
+  const fixtureRoot = await mkdtemp(path.join(tmpdir(), "zauberschmiede-version-"));
+
+  try {
+    await cp(path.join(repositoryRoot, "packs"), path.join(fixtureRoot, "packs"), {
+      recursive: true,
+    });
+    await cp(path.join(repositoryRoot, "world"), path.join(fixtureRoot, "world"), {
+      recursive: true,
+    });
+    const manifestFile = path.join(
+      fixtureRoot,
+      "packs",
+      "behavior",
+      "die_zauberschmiede",
+      "manifest.json",
+    );
+    const manifest = JSON.parse(await readFile(manifestFile, "utf8"));
+    manifest.header.version = [1, 1, 0];
+    manifest.modules[0].version = [1, 1, 0];
+    await writeFile(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
+
+    const result = spawnSync(
+      process.execPath,
+      [projectCommand, "validate", fixtureRoot],
+      { encoding: "utf8" },
+    );
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /at least \[1, 2, 0\]/);
+  } finally {
+    await rm(fixtureRoot, { recursive: true, force: true });
+  }
+});
+
+test("project package embeds the configured starter chest", () => {
+  const result = spawnSync(
+    process.execPath,
+    [projectCommand, "package", repositoryRoot],
+    { encoding: "utf8" },
+  );
+  assert.equal(result.status, 0, result.stderr);
+  const relativePackage = result.stdout.match(/Created (.+\.mcworld)/)?.[1];
+  assert.ok(relativePackage, "package command must print the output path");
+  const packagePath = path.join(repositoryRoot, relativePackage);
+
+  const loot = spawnSync(
+    "unzip",
+    [
+      "-p",
+      packagePath,
+      "behavior_packs/die_zauberschmiede/loot_tables/chests/spawn_bonus_chest.json",
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(loot.status, 0, loot.stderr);
+  assert.equal(JSON.parse(loot.stdout).pools.length, 3);
+
+  const level = spawnSync("unzip", ["-p", packagePath, "level.dat"]);
+  assert.equal(level.status, 0, level.stderr?.toString());
+  assert.equal(readWorldFlags(level.stdout).bonusChestEnabled, 1);
+  assert.equal(readWorldFlags(level.stdout).bonusChestSpawned, 0);
 });
 
 test("report command preserves a browsable Creator Tools HTML report", async () => {

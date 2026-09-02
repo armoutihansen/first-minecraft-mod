@@ -3,6 +3,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { enableStarterChest } from "./lib/level-dat.mjs";
 import { inspectWorldPackage, packageWorld } from "./lib/packaging.mjs";
 import { checkAuthoredJson } from "./lib/project-files.mjs";
 import { createValidationReport } from "./lib/reporting.mjs";
@@ -24,8 +25,13 @@ async function main() {
   if (command === "validate") {
     const result = await validateProject(projectRoot);
     console.log(`Valid JSON: ${result.jsonFileCount} authored file(s)`);
+    console.log(`Behavior pack version: ${result.packVersion.join(".")}`);
     console.log(
       "Recipe: wooden pickaxe + 3 cobblestone -> 1 stone pickaxe",
+    );
+    console.log("Starter chest: enabled and awaiting first spawn");
+    console.log(
+      "Handbuch: use three separate crafting squares for the cobblestone",
     );
     console.log(
       `Creator Tools validation passed (${result.creatorToolsErrors} errors, ${result.creatorToolsWarnings} warnings)`,
@@ -47,6 +53,12 @@ async function main() {
     return;
   }
 
+  if (command === "enable-starter-chest") {
+    await enableStarterChest(projectRoot);
+    console.log("Enabled the starter bonus chest in world/die_zauberschmiede/level.dat");
+    return;
+  }
+
   if (command === "inspect") {
     inspectWorldPackage(path.resolve(pathArgument ?? ""));
     console.log(`Valid .mcworld structure: ${pathArgument}`);
@@ -54,7 +66,7 @@ async function main() {
   }
 
   throw new Error(
-    "Usage: bedrock-project.mjs <check-json|validate|report|package|inspect> [path] [--no-open]",
+    "Usage: bedrock-project.mjs <check-json|validate|report|package|inspect|enable-starter-chest> [path] [--no-open]",
   );
 }
 

@@ -113,7 +113,10 @@ Static success means the JSON and package shape are plausible. It does not mean 
 
 Use a freshly generated `.mcworld` each time:
 
-1. Transfer it to the iPhone and Amazon Kids tablet without unpacking it.
+1. Confirm the filename contains the current behavior-pack version, then transfer
+   that newly generated file to the iPhone and Amazon Kids tablet without
+   unpacking it. A new pack feature uses a higher pack version so the device can
+   distinguish successive builds.
 2. On iPhone, open or share the `.mcworld` with Minecraft, wait for the successful-import message, then select it from **Play**.
 3. On the Amazon Kids tablet, download or copy the file, open it with Minecraft from an allowed file browser/profile, wait for successful import, then select it from **Play**. Amazon Kids parental controls may require the parent to permit file access or perform the transfer from the parent profile.
 4. Confirm that Die Zauberschmiede opens in Survival and does not request experimental creator features.
@@ -134,7 +137,7 @@ The Mac-side setup now provides:
 - explicit failures for malformed JSON, missing base-world files, and an archive with an extra directory level;
 - instructions for supplying the authoritative base world from a supported Bedrock device.
 
-The authoritative base world and smoke-test package now exist. Opening the `.mcworld` launches Minecraft on the iPhone, but the clean-import details are not yet verified. The parent explicitly accepted provisional device assumptions so first-recipe development could continue; both clean-import records must still be completed before issue #2 can close. The first custom recipe is now authored; starter-chest, Handbuch, and player acceptance remain on the checklist in `docs/acceptance/first-custom-recipe.md`.
+The authoritative base world and versioned package now exist. Opening the `.mcworld` launches Minecraft on the iPhone, and the first custom recipe works through recipe-book autofill. Bedrock requires the three cobblestone to occupy three separate crafting squares when placed manually. The base world is configured to create Bedrock's built-in bonus chest near spawn on its first opening, while the behavior pack replaces that chest's standard loot with the Handbuch, one wooden pickaxe, and three cobblestone. The new starter chest and remaining player checks are still pending on-device acceptance; the tablet remains a provisional assumption until issue #4.
 
 If local Creator Tools does not run with the current Node.js version, stop and report the exact error. The parent-facing next step is then to install an actively supported Node.js 22 LTS runtime (preferably through the existing Homebrew setup or a user-chosen version manager) and rerun `npm ci`; do not silently replace the system runtime.
 

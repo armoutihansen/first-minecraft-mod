@@ -2,7 +2,11 @@
 
 Die Zauberschmiede is a ready-made Minecraft Bedrock Survival world for a parent and child to play on an iPhone and an Amazon Kids tablet, usually together over home Wi-Fi.
 
-The first playable version centers on a starter chest near spawn. It contains the German guidebook **Handbuch der Zauberschmiede**, materials for trying the recipes, and three simple custom recipes:
+The first playable version centers on a starter chest near spawn. Bedrock creates
+it on the first opening through the world's built-in bonus-chest mechanism, with
+contents supplied by the behavior pack. It contains the German guidebook
+**Handbuch der Zauberschmiede**, materials for trying the recipes, and three
+simple custom recipes:
 
 - wooden pickaxe + 3 cobblestone → stone pickaxe
 - iron chestplate + 1 diamond → netherite chestplate
@@ -34,7 +38,22 @@ Packaging also needs an exported base world at `world/die_zauberschmiede/`. See 
 
 ```sh
 npm run package:world
-npm run inspect:world -- dist/die-zauberschmiede.mcworld
+```
+
+The command prints the generated package path. Pass that path to
+`npm run inspect:world --`, then transfer only that newly named file to the
+device. The filename includes the behavior-pack version; increase that version
+when the pack gains content so devices can distinguish successive builds.
+
+For the first recipe, use the recipe-book button or place the wooden pickaxe in
+one crafting square and one cobblestone in each of three other squares. A stack
+of three cobblestone in one square does not match Bedrock's crafting grid.
+
+The authoritative base world is already configured to create the starter chest.
+If it is ever replaced with a fresh device export, restore that setting with:
+
+```sh
+npm run prepare:starter-chest
 ```
 
 The package is not accepted until the [first custom recipe checklist](docs/acceptance/first-custom-recipe.md) passes on both family devices.
