@@ -275,7 +275,7 @@ test("inspection rejects a behavior-pack association with the wrong UUID", async
   }
 });
 
-test("project validation accepts the first Zauberschmiede spell", async () => {
+test("project validation accepts the complete three-spell package", async () => {
   await rm(path.join(repositoryRoot, "out"), { recursive: true, force: true });
   const result = spawnSync(
     process.execPath,
@@ -290,10 +290,18 @@ test("project validation accepts the first Zauberschmiede spell", async () => {
     result.stdout,
     /wooden pickaxe \+ 3 cobblestone -> 1 stone pickaxe/,
   );
+  assert.match(
+    result.stdout,
+    /iron chestplate \+ 1 diamond -> 1 netherite chestplate/,
+  );
+  assert.match(
+    result.stdout,
+    /iron sword \+ 1 diamond -> 1 netherite sword/,
+  );
   assert.match(result.stdout, /Starter chest: enabled and awaiting first spawn/);
   assert.match(
     result.stdout,
-    /Handbuch: use three separate crafting squares for the cobblestone/,
+    /Handbuch: all three recipes and provisional spells are included/,
   );
   await assert.rejects(
     access(path.join(repositoryRoot, "out", "die_zauberschmiede.mcr.json")),
@@ -301,7 +309,7 @@ test("project validation accepts the first Zauberschmiede spell", async () => {
   );
 });
 
-test("project validation rejects the recipe-only pack version", async () => {
+test("project validation rejects the first-slice pack version", async () => {
   const fixtureRoot = await mkdtemp(path.join(tmpdir(), "zauberschmiede-version-"));
 
   try {
@@ -319,8 +327,8 @@ test("project validation rejects the recipe-only pack version", async () => {
       "manifest.json",
     );
     const manifest = JSON.parse(await readFile(manifestFile, "utf8"));
-    manifest.header.version = [1, 1, 0];
-    manifest.modules[0].version = [1, 1, 0];
+    manifest.header.version = [1, 2, 0];
+    manifest.modules[0].version = [1, 2, 0];
     await writeFile(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
 
     const result = spawnSync(
@@ -329,13 +337,13 @@ test("project validation rejects the recipe-only pack version", async () => {
       { encoding: "utf8" },
     );
     assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /at least \[1, 2, 0\]/);
+    assert.match(result.stderr, /at least \[1, 3, 0\]/);
   } finally {
     await rm(fixtureRoot, { recursive: true, force: true });
   }
 });
 
-test("project package embeds the configured starter chest", () => {
+test("project package embeds all three spells and complete starter chest", () => {
   const result = spawnSync(
     process.execPath,
     [projectCommand, "package", repositoryRoot],
@@ -356,7 +364,47 @@ test("project package embeds the configured starter chest", () => {
     { encoding: "utf8" },
   );
   assert.equal(loot.status, 0, loot.stderr);
-  assert.equal(JSON.parse(loot.stdout).pools.length, 3);
+  const chest = JSON.parse(loot.stdout);
+  assert.deepEqual(
+    chest.pools.map((pool) => pool.entries[0].name),
+    [
+      "minecraft:written_book",
+      "minecraft:wooden_pickaxe",
+      "minecraft:cobblestone",
+      "minecraft:iron_chestplate",
+      "minecraft:iron_sword",
+      "minecraft:diamond",
+    ],
+  );
+  assert.equal(
+    chest.pools[5].entries[0].functions[0].count,
+    2,
+    "the chest must contain one diamond for each upgrade spell",
+  );
+  const bookPages = chest.pools[0].entries[0].functions.find(
+    (entry) => entry.function === "minecraft:set_book_contents",
+  ).pages;
+  assert.equal(bookPages.length, 6);
+  assert.match(bookPages.join("\n"), /Eisenharnisch.*Diamanten/s);
+  assert.match(bookPages.join("\n"), /Eisenschwert.*Diamanten/s);
+
+  for (const recipe of [
+    "wooden_pickaxe_to_stone_pickaxe.json",
+    "iron_chestplate_to_netherite_chestplate.json",
+    "iron_sword_to_netherite_sword.json",
+  ]) {
+    const embeddedRecipe = spawnSync(
+      "unzip",
+      [
+        "-p",
+        packagePath,
+        `behavior_packs/die_zauberschmiede/recipes/${recipe}`,
+      ],
+      { encoding: "utf8" },
+    );
+    assert.equal(embeddedRecipe.status, 0, embeddedRecipe.stderr);
+    assert.doesNotThrow(() => JSON.parse(embeddedRecipe.stdout));
+  }
 
   const level = spawnSync("unzip", ["-p", packagePath, "level.dat"]);
   assert.equal(level.status, 0, level.stderr?.toString());

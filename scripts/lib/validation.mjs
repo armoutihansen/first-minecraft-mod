@@ -33,6 +33,10 @@ const expectedStarterChest = {
               pages: [
                 "Erster Zauber\n\nLege eine Holzspitzhacke und drei Bruchsteine in vier getrennte Felder der Werkbank.",
                 "Nimm die Steinspitzhacke aus dem Ergebnisfeld.\n\nZauberspruch:\nStein, erwache!",
+                "Zweiter Zauber\n\nLege einen Eisenharnisch und einen Diamanten in zwei getrennte Felder der Werkbank.",
+                "Nimm den Netheritharnisch aus dem Ergebnisfeld.\n\nZauberspruch:\nDiamantenglanz, stärke den Stahl!",
+                "Dritter Zauber\n\nLege ein Eisenschwert und einen Diamanten in zwei getrennte Felder der Werkbank.",
+                "Nimm das Netheritschwert aus dem Ergebnisfeld.\n\nZauberspruch:\nKlinge, werde unbezwingbar!",
               ],
             },
           ],
@@ -65,8 +69,77 @@ const expectedStarterChest = {
         },
       ],
     },
+    {
+      rolls: 1,
+      entries: [
+        {
+          type: "item",
+          name: "minecraft:iron_chestplate",
+          weight: 1,
+        },
+      ],
+    },
+    {
+      rolls: 1,
+      entries: [
+        {
+          type: "item",
+          name: "minecraft:iron_sword",
+          weight: 1,
+        },
+      ],
+    },
+    {
+      rolls: 1,
+      entries: [
+        {
+          type: "item",
+          name: "minecraft:diamond",
+          weight: 1,
+          functions: [
+            {
+              function: "minecraft:set_count",
+              count: 2,
+            },
+          ],
+        },
+      ],
+    },
   ],
 };
+
+const expectedRecipes = [
+  {
+    fileName: "wooden_pickaxe_to_stone_pickaxe.json",
+    identifier: "die_zauberschmiede:wooden_pickaxe_to_stone_pickaxe",
+    ingredients: [
+      { item: "minecraft:wooden_pickaxe" },
+      { item: "minecraft:cobblestone", count: 3 },
+    ],
+    result: { item: "minecraft:stone_pickaxe", count: 1 },
+    description: "wooden-pickaxe spell",
+  },
+  {
+    fileName: "iron_chestplate_to_netherite_chestplate.json",
+    identifier: "die_zauberschmiede:iron_chestplate_to_netherite_chestplate",
+    ingredients: [
+      { item: "minecraft:iron_chestplate" },
+      { item: "minecraft:diamond" },
+    ],
+    result: { item: "minecraft:netherite_chestplate", count: 1 },
+    description: "chestplate spell",
+  },
+  {
+    fileName: "iron_sword_to_netherite_sword.json",
+    identifier: "die_zauberschmiede:iron_sword_to_netherite_sword",
+    ingredients: [
+      { item: "minecraft:iron_sword" },
+      { item: "minecraft:diamond" },
+    ],
+    result: { item: "minecraft:netherite_sword", count: 1 },
+    description: "sword spell",
+  },
+];
 
 export async function validateProject(projectRoot) {
   const behaviorPack = path.join(
@@ -76,11 +149,6 @@ export async function validateProject(projectRoot) {
     "die_zauberschmiede",
   );
   const manifestFile = path.join(behaviorPack, "manifest.json");
-  const firstRecipeFile = path.join(
-    behaviorPack,
-    "recipes",
-    "wooden_pickaxe_to_stone_pickaxe.json",
-  );
   const starterChestFile = path.join(
     behaviorPack,
     "loot_tables",
@@ -98,10 +166,19 @@ export async function validateProject(projectRoot) {
   const jsonFiles = await checkAuthoredJson(projectRoot);
   const manifest = JSON.parse(await readFile(manifestFile, "utf8"));
   const packVersion = manifest.header?.version;
-  const firstRecipe = JSON.parse(await readFile(firstRecipeFile, "utf8"));
+  const recipes = await Promise.all(
+    expectedRecipes.map(async (expected) => ({
+      expected,
+      recipe: JSON.parse(
+        await readFile(
+          path.join(behaviorPack, "recipes", expected.fileName),
+          "utf8",
+        ),
+      ),
+    })),
+  );
   const starterChest = JSON.parse(await readFile(starterChestFile, "utf8"));
   const worldFlags = readWorldFlags(await readFile(levelFile));
-  const spell = firstRecipe["minecraft:recipe_shapeless"];
   const uuidPattern =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -112,8 +189,8 @@ export async function validateProject(projectRoot) {
     "Pack version must contain three non-negative integers",
   );
   requireCondition(
-    isVersionAtLeast(packVersion, [1, 2, 0]),
-    "Pack version must be at least [1, 2, 0] after adding the starter chest",
+    isVersionAtLeast(packVersion, [1, 3, 0]),
+    "Pack version must be at least [1, 3, 0] for the complete three-spell package",
   );
   requireCondition(
     sameJson(manifest.header?.min_engine_version, [1, 21, 40]),
@@ -134,40 +211,36 @@ export async function validateProject(projectRoot) {
     manifest.capabilities === undefined,
     "Experimental capabilities are not allowed",
   );
-  requireCondition(
-    firstRecipe.format_version === "1.21.40",
-    "The first custom recipe must use format_version 1.21.40",
-  );
-  requireCondition(
-    spell?.description?.identifier ===
-      "die_zauberschmiede:wooden_pickaxe_to_stone_pickaxe",
-    "The first custom recipe has the wrong identifier",
-  );
-  requireCondition(
-    sameJson(spell?.tags, ["crafting_table"]),
-    "The first custom recipe must use ordinary crafting",
-  );
-  requireCondition(
-    sameJson(spell?.ingredients, [
-      { item: "minecraft:wooden_pickaxe" },
-      { item: "minecraft:cobblestone", count: 3 },
-    ]),
-    "The first custom recipe must consume one wooden pickaxe and three cobblestone",
-  );
-  requireCondition(
-    sameJson(spell?.unlock, { context: "AlwaysUnlocked" }),
-    "The first custom recipe must always be discoverable",
-  );
-  requireCondition(
-    sameJson(spell?.result, {
-      item: "minecraft:stone_pickaxe",
-      count: 1,
-    }),
-    "The first custom recipe must produce exactly one stone pickaxe",
-  );
+  for (const { expected, recipe } of recipes) {
+    const spell = recipe["minecraft:recipe_shapeless"];
+    requireCondition(
+      recipe.format_version === "1.21.40",
+      `The ${expected.description} must use format_version 1.21.40`,
+    );
+    requireCondition(
+      spell?.description?.identifier === expected.identifier,
+      `The ${expected.description} has the wrong identifier`,
+    );
+    requireCondition(
+      sameJson(spell?.tags, ["crafting_table"]),
+      `The ${expected.description} must use ordinary crafting`,
+    );
+    requireCondition(
+      sameJson(spell?.ingredients, expected.ingredients),
+      `The ${expected.description} has the wrong ingredients`,
+    );
+    requireCondition(
+      sameJson(spell?.unlock, { context: "AlwaysUnlocked" }),
+      `The ${expected.description} must always be discoverable`,
+    );
+    requireCondition(
+      sameJson(spell?.result, expected.result),
+      `The ${expected.description} has the wrong result`,
+    );
+  }
   requireCondition(
     sameJson(starterChest, expectedStarterChest),
-    "The starter chest loot table must match the exact first-slice contents",
+    "The starter chest loot table must match the exact first-playable contents",
   );
   requireCondition(
     worldFlags.bonusChestEnabled === 1 &&
@@ -184,8 +257,8 @@ export async function validateProject(projectRoot) {
     "The first playable world must not use experimental creator features",
   );
   requireCondition(
-    jsonFiles.length === 3,
-    "The first spell slice must contain one recipe and one starter-chest loot table",
+    jsonFiles.length === 5,
+    "The first playable pack must contain exactly three recipes and one starter-chest loot table",
   );
 
   await requireFile(localCreatorTools, projectRoot);

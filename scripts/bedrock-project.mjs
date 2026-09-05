@@ -29,10 +29,12 @@ async function main() {
     console.log(
       "Recipe: wooden pickaxe + 3 cobblestone -> 1 stone pickaxe",
     );
-    console.log("Starter chest: enabled and awaiting first spawn");
     console.log(
-      "Handbuch: use three separate crafting squares for the cobblestone",
+      "Recipe: iron chestplate + 1 diamond -> 1 netherite chestplate",
     );
+    console.log("Recipe: iron sword + 1 diamond -> 1 netherite sword");
+    console.log("Starter chest: enabled and awaiting first spawn");
+    console.log("Handbuch: all three recipes and provisional spells are included");
     console.log(
       `Creator Tools validation passed (${result.creatorToolsErrors} errors, ${result.creatorToolsWarnings} warnings)`,
     );

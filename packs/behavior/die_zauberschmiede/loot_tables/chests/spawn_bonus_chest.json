@@ -18,7 +18,11 @@
               "title": "Handbuch der Zauberschmiede",
               "pages": [
                 "Erster Zauber\n\nLege eine Holzspitzhacke und drei Bruchsteine in vier getrennte Felder der Werkbank.",
-                "Nimm die Steinspitzhacke aus dem Ergebnisfeld.\n\nZauberspruch:\nStein, erwache!"
+                "Nimm die Steinspitzhacke aus dem Ergebnisfeld.\n\nZauberspruch:\nStein, erwache!",
+                "Zweiter Zauber\n\nLege einen Eisenharnisch und einen Diamanten in zwei getrennte Felder der Werkbank.",
+                "Nimm den Netheritharnisch aus dem Ergebnisfeld.\n\nZauberspruch:\nDiamantenglanz, stärke den Stahl!",
+                "Dritter Zauber\n\nLege ein Eisenschwert und einen Diamanten in zwei getrennte Felder der Werkbank.",
+                "Nimm das Netheritschwert aus dem Ergebnisfeld.\n\nZauberspruch:\nKlinge, werde unbezwingbar!"
               ]
             }
           ]
@@ -46,6 +50,42 @@
             {
               "function": "minecraft:set_count",
               "count": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "item",
+          "name": "minecraft:iron_chestplate",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "item",
+          "name": "minecraft:iron_sword",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "item",
+          "name": "minecraft:diamond",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": 2
             }
           ]
         }

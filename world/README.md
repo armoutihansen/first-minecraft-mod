@@ -12,7 +12,13 @@ Before export, the world must:
 - use Survival mode with experimental creator features disabled;
 - leave ordinary Survival and vanilla crafting enabled.
 
-This first export began as the smoke-test world. The package launches Minecraft on the iPhone, but the clean-import details and tablet import remain unverified. First-recipe work continued under the parent's explicit provisional device assumptions; both clean-import records are still required before issue #2 closes. Add player-facing world state only through the documented starter-chest and Handbuch flow, then use `docs/acceptance/first-custom-recipe.md` for final acceptance.
+This export began as the smoke-test world and has successfully launched a
+versioned package in Minecraft on the iPhone. The authoritative base remains
+unchanged while behavior-pack content evolves. Add player-facing world state
+only through the documented starter-chest and Handbuch flow, then use
+`docs/acceptance/first-custom-recipe.md` for first-playable acceptance. Tablet
+import, personalization, and home-Wi-Fi multiplayer remain the human-led work in
+issue #4.
 
 Do not put an exported `.mcworld` file in this directory. Keep the archive outside the repository, unpack it, and copy the world files themselves so that `level.dat` is located at:
 

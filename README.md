@@ -45,9 +45,11 @@ The command prints the generated package path. Pass that path to
 device. The filename includes the behavior-pack version; increase that version
 when the pack gains content so devices can distinguish successive builds.
 
-For the first recipe, use the recipe-book button or place the wooden pickaxe in
-one crafting square and one cobblestone in each of three other squares. A stack
-of three cobblestone in one square does not match Bedrock's crafting grid.
+All three recipes are shapeless and work at a crafting table. For the first
+recipe, place the wooden pickaxe in one crafting square and one cobblestone in
+each of three other squares. A stack of three cobblestone in one square does not
+match Bedrock's crafting grid. For each upgrade recipe, place the iron item and
+one diamond in separate squares.
 
 The authoritative base world is already configured to create the starter chest.
 If it is ever replaced with a fresh device export, restore that setting with:
@@ -56,4 +58,7 @@ If it is ever replaced with a fresh device export, restore that setting with:
 npm run prepare:starter-chest
 ```
 
-The package is not accepted until the [first custom recipe checklist](docs/acceptance/first-custom-recipe.md) passes on both family devices.
+The issue #3 package candidate is ready after the Mac checks and one clean-import
+recipe run in the [first playable version checklist](docs/acceptance/first-custom-recipe.md).
+The first playable version is accepted for family use only after issue #4 also
+records successful checks on both target devices and over home Wi-Fi.

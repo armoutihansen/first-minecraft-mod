@@ -1,4 +1,4 @@
-# First custom recipe acceptance
+# First playable version acceptance
 
 Run these checks from a freshly generated and freshly imported `.mcworld` package.
 
@@ -10,21 +10,33 @@ Run these checks from a freshly generated and freshly imported `.mcworld` packag
 4. Run `npm run package:world`.
 5. Run `npm run inspect:world --`, followed by the package path printed in step 4.
 
-## Player checks on both target devices
+## Player checks from a clean import
 
-Repeat the following on the iPhone and Amazon Kids tablet:
+Use the newly generated package rather than an existing world copy:
 
 - [ ] The package imports successfully and appears as **Die Zauberschmiede**.
 - [ ] The world opens in Survival without requesting experimental creator features.
 - [ ] The initial spawn is close to a clearly visible starter chest.
-- [ ] The chest opens and contains the Handbuch der Zauberschmiede, one wooden pickaxe, and three cobblestone.
-- [ ] The Handbuch entry is readable, primarily German, and states the exact custom recipe with a short magical sentence.
+- [ ] The chest opens and contains the **Handbuch der Zauberschmiede**, one wooden pickaxe, three cobblestone, one iron chestplate, one iron sword, and two diamonds.
+- [ ] The Handbuch is readable and primarily German. It states all three recipes exactly and gives each a short provisional magical sentence.
 - [ ] Ordinary crafting consumes one wooden pickaxe and three cobblestone and produces exactly one stone pickaxe. Recipe-book autofill works; for manual placement, the cobblestone occupies three separate crafting squares rather than one stacked square.
+- [ ] Ordinary crafting consumes one iron chestplate and one diamond and produces exactly one netherite chestplate.
+- [ ] Ordinary crafting consumes one iron sword and one diamond and produces exactly one netherite sword.
 - [ ] A representative vanilla recipe still works and normal Survival behavior remains available.
 
-Record the Minecraft version and pass/fail result for each device before treating issue #2 as complete.
+Record the Minecraft version and result from one clean target-device import
+before treating issue #3 as complete.
 
-| Device | Minecraft version | Clean import | Player checks | Result |
+| Device | Minecraft version | Package | Player checks | Result |
 | --- | --- | --- | --- | --- |
-| iPhone | Not recorded | Versioned package imports | First recipe passes through recipe-book autofill; starter chest and remaining checks pending | Provisional |
-| Amazon Kids tablet | Not recorded | Assumed for development; not verified | Pending | Provisional |
+| iPhone | Not recorded | `die-zauberschmiede-v1.3.0.mcworld` | Pending | Pending |
+| Amazon Kids tablet | Not recorded | `die-zauberschmiede-v1.3.0.mcworld` | Pending | Pending |
+
+## Family-device acceptance (issue #4)
+
+Before calling the first playable version accepted for family use:
+
+- [ ] Repeat the clean-import player checks above on both the iPhone and Amazon Kids tablet.
+- [ ] Let the child refine the three provisional magical sentences and shape the spawn area.
+- [ ] Host the world on one device over home Wi-Fi and join from the other.
+- [ ] Confirm that the joining player can read the same Handbuch and use all three recipes.
