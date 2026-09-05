@@ -29,7 +29,7 @@ before treating issue #3 as complete.
 
 | Device | Minecraft version | Package | Player checks | Result |
 | --- | --- | --- | --- | --- |
-| iPhone | Not recorded | `die-zauberschmiede-v1.3.0.mcworld` | Pending | Pending |
+| iPhone | Not recorded | `die-zauberschmiede-v1.3.0.mcworld` | Clean import, starter chest, Handbuch, and all three recipes confirmed by the parent | Pass |
 | Amazon Kids tablet | Not recorded | `die-zauberschmiede-v1.3.0.mcworld` | Pending | Pending |
 
 ## Family-device acceptance (issue #4)
